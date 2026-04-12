@@ -40,9 +40,7 @@ export default function Navbar({ onOpenAuth }) {
         }`}
       >
         <a href="#" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-base font-semibold text-white">
-            Ω
-          </span>
+          <img src="/logo.png" alt="Omni" className="h-12 w-12 object-contain" />
           <span className="text-[15px] font-semibold tracking-tight text-[#0b0b14]">
             {nav.brand}
           </span>

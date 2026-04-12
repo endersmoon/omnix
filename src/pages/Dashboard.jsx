@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import {
   AssistantRuntimeProvider,
   useLocalRuntime,
@@ -17,19 +16,17 @@ import {
   ArrowUp,
   Briefcase,
   FileText,
-  LogOut,
   MessageSquare,
   Mic,
   MicOff,
   Paperclip,
-  PanelLeft,
-  Plus,
   Search,
   Send,
   Sparkles,
   Target,
   X,
 } from 'lucide-react'
+import DashboardLayout from './DashboardLayout'
 
 const CANNED_REPLIES = [
   "Here's a solid starting point — tell me the role or company you're targeting and I'll tailor the plan.",
@@ -74,91 +71,6 @@ const dummyAdapter = {
   },
 }
 
-function Sidebar({ open, onToggle, onClose, onSignOut }) {
-  const chats = [
-    'FAANG interview prep',
-    'Resume for Stripe PM role',
-    'Cover letter — Linear',
-    'Behavioral questions',
-  ]
-  return (
-    <>
-      {/* Mobile backdrop */}
-      <button
-        type="button"
-        aria-label="Close sidebar"
-        onClick={onClose}
-        className={`fixed inset-0 z-40 bg-[#0b0b14]/40 backdrop-blur-sm transition-opacity md:hidden ${
-          open ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
-      />
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 shrink-0 overflow-hidden border-r border-[#ececf3] bg-[#fafafc] transition-transform duration-300 ease-out md:static md:z-auto md:translate-x-0 md:transition-[width] ${
-          open ? 'translate-x-0 md:w-64' : '-translate-x-full md:translate-x-0 md:w-0 md:border-r-0'
-        }`}
-      >
-       <div className="flex h-full w-64 flex-col">
-      <div className="flex items-center justify-between px-4 py-4">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-base font-semibold text-white">
-            Ω
-          </span>
-          <span className="text-[15px] font-semibold tracking-tight text-[#0b0b14]">Omni</span>
-        </Link>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label="Hide sidebar"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
-        >
-          <PanelLeft className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="px-3">
-        <button
-          type="button"
-          className="flex w-full items-center gap-2 rounded-xl border border-[#ececf3] bg-white px-3 py-2.5 text-sm font-medium text-[#0b0b14] hover:bg-black/[0.03] transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          New chat
-        </button>
-      </div>
-
-      <div className="mt-5 flex-1 overflow-y-auto px-2">
-        <p className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9a9aae]">
-          Recent
-        </p>
-        <ul className="flex flex-col gap-0.5">
-          {chats.map((c) => (
-            <li key={c}>
-              <button
-                type="button"
-                className="w-full truncate rounded-lg px-2.5 py-2 text-left text-sm text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
-              >
-                {c}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="border-t border-[#ececf3] p-3">
-        <button
-          type="button"
-          onClick={onSignOut}
-          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </button>
-      </div>
-     </div>
-      </aside>
-    </>
-  )
-}
-
 function UserMessage() {
   return (
     <MessagePrimitive.Root className="flex justify-end">
@@ -172,9 +84,7 @@ function UserMessage() {
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="flex items-start gap-3">
-      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white">
-        Ω
-      </span>
+      <img src="/logo.png" alt="Omni" className="mt-0.5 h-8 w-8 shrink-0 object-contain" />
       <div className="max-w-[80%] rounded-2xl border border-[#ececf3] bg-white px-4 py-2.5 text-sm leading-relaxed text-[#0b0b14]">
         <MessagePrimitive.Parts />
       </div>
@@ -359,9 +269,7 @@ const QUICK_CHIPS = [
 function Welcome() {
   return (
     <div className="flex grow flex-col items-center justify-center px-4 py-16 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-xl font-semibold text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)]">
-        Ω
-      </span>
+      <img src="/logo-wink.gif" alt="Omni" className="h-40 w-40 object-contain" />
       <h1 className="mt-5 text-3xl font-semibold tracking-tight text-[#0b0b14]">
         How can I help you get hired?
       </h1>
@@ -429,7 +337,6 @@ function Thread() {
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate()
   const runtime = useLocalRuntime(dummyAdapter, {
     adapters: {
       attachments: new CompositeAttachmentAdapter([
@@ -439,55 +346,12 @@ export default function Dashboard() {
       ]),
     },
   })
-  const isDesktop =
-    typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
-  const [sidebarOpen, setSidebarOpen] = useState(isDesktop)
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="flex h-svh w-full bg-white text-[#0b0b14]">
-        <Sidebar
-          open={sidebarOpen}
-          onToggle={() => setSidebarOpen((v) => !v)}
-          onClose={() => setSidebarOpen(false)}
-          onSignOut={() => navigate('/')}
-        />
-        <main className="relative flex h-full flex-1 flex-col">
-          {/* Mobile header */}
-          <header className="relative flex h-14 shrink-0 items-center justify-center border-b border-[#ececf3] bg-white/90 px-4 backdrop-blur-md md:hidden">
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Show sidebar"
-              className="absolute left-3 flex h-9 w-9 items-center justify-center rounded-lg text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
-            >
-              <PanelLeft className="h-4 w-4" />
-            </button>
-            <Link to="/" className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white">
-                Ω
-              </span>
-              <span className="text-[15px] font-semibold tracking-tight text-[#0b0b14]">
-                Omni
-              </span>
-            </Link>
-          </header>
-
-          {/* Desktop floating toggle (only when collapsed) */}
-          {!sidebarOpen && (
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Show sidebar"
-              className="absolute left-4 top-4 z-10 hidden h-9 w-9 items-center justify-center rounded-lg border border-[#ececf3] bg-white text-[#5b5b6e] shadow-[0_1px_2px_rgba(11,11,20,0.04)] hover:text-[#0b0b14] hover:bg-black/[0.03] transition-colors md:flex"
-            >
-              <PanelLeft className="h-4 w-4" />
-            </button>
-          )}
-
-          <Thread />
-        </main>
-      </div>
+      <DashboardLayout>
+        <Thread />
+      </DashboardLayout>
     </AssistantRuntimeProvider>
   )
 }

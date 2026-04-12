@@ -14,9 +14,7 @@ export default function Footer() {
       <Container>
         <div className="py-12 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <a href="/" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-base font-semibold text-white">
-              Ω
-            </span>
+            <img src="/logo.png" alt="Omni" className="h-12 w-12 object-contain" />
             <span className="text-[15px] font-semibold tracking-tight text-neutral-900">
               Omni
             </span>
