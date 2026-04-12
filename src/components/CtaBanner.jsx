@@ -2,16 +2,16 @@ import Container from './Container'
 
 export default function CtaBanner() {
   return (
-    <section className="bg-white py-16 md:py-24">
+    <section id="get-started" className="bg-white py-12 sm:py-16 md:py-24 scroll-mt-24">
       <Container>
-        <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-50 px-8 py-10 md:px-14 md:py-14">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-neutral-200 bg-neutral-50 px-6 py-8 sm:px-8 sm:py-10 md:px-14 md:py-14">
           <div
             aria-hidden
             className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
           />
           <div className="relative flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.1]">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.1]">
                 Start your job search in 60 seconds
               </h2>
               <p className="mt-3 text-neutral-500 md:text-lg">

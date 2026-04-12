@@ -37,10 +37,10 @@ export default function Pillars() {
   }
 
   return (
-    <section className="relative left-1/2 -translate-x-1/2 w-screen bg-white py-24 md:py-32 overflow-x-clip">
+    <section className="relative left-1/2 -translate-x-1/2 w-[100vw] bg-white py-16 sm:py-24 md:py-32 overflow-x-clip">
       <Container>
         <div className="flex items-end justify-between gap-8 mb-12">
-          <h2 className="text-4xl md:text-6xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05] max-w-3xl">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05] max-w-3xl">
             Everything you need to land your next role
           </h2>
           <div className="hidden sm:flex gap-3 shrink-0">

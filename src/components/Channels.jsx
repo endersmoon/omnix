@@ -39,12 +39,12 @@ const channels = [
 
 export default function Channels() {
   return (
-    <section className="bg-white py-24 md:py-32">
+    <section id="channels" className="bg-white py-16 sm:py-24 md:py-32 scroll-mt-24">
       <Container>
         <span className="block text-xs md:text-sm uppercase tracking-[0.25em] text-primary font-semibold mb-6">
           Channels
         </span>
-        <h2 className="text-4xl md:text-6xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05] max-w-3xl">
+        <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05] max-w-3xl">
           Use it wherever you already are
         </h2>
 
@@ -52,7 +52,7 @@ export default function Channels() {
           {channels.map((c) => (
             <article
               key={c.title}
-              className="rounded-3xl border border-neutral-200 bg-neutral-50 p-8 transition-all hover:border-primary/30 hover:shadow-xl hover:shadow-neutral-900/[0.04] hover:-translate-y-1"
+              className="rounded-2xl sm:rounded-3xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8 transition-all hover:border-primary/30 hover:shadow-xl hover:shadow-neutral-900/[0.04] hover:-translate-y-1"
             >
               <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${c.accent}`}>
                 {c.icon}

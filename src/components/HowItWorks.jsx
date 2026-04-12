@@ -3,32 +3,32 @@ import Container from './Container'
 
 const steps = [
   {
-    title: 'Share your goals',
-    desc: 'Tell Omni your target role, location, salary range, and dealbreakers. No forms, just a conversation.',
-    user: 'I want a product manager role in Bangalore or remote, ₹30L+, preferably fintech or consumer apps.',
+    title: 'Set your search in 30 seconds',
+    desc: 'No 40-field profile, no resume to upload. Tell Omni your target role, comp, and dealbreakers in plain English — once.',
+    user: 'PM role, Bangalore or remote, ₹30L+, fintech or consumer apps.',
     channels: ['Web', 'WhatsApp', 'Email'],
   },
   {
-    title: 'Omni searches non-stop',
-    desc: 'Omni scans every major job board and company careers page, then surfaces new matches daily and ranks them by fit.',
-    bot: '18 new roles found. Top match: Senior PM at Razorpay — 94% fit. 3 others are at companies you\u2019ve shortlisted.',
+    title: 'Wake up to ranked matches, every day',
+    desc: 'Omni scans every major job board and careers page overnight, then sends a daily digest scored by fit — so you only see roles worth applying to.',
+    bot: '18 new roles this morning. Top match: Senior PM at Razorpay — 94% fit. 3 more at companies on your shortlist.',
     channels: ['Automated', 'Daily digest'],
   },
   {
-    title: 'Ship strong applications',
-    desc: 'Ask Omni to tailor your resume for a specific JD, write a cover letter, or draft a cold outreach email in seconds.',
-    user: 'Rewrite my resume for the Razorpay PM role and write a cold email to their talent team.',
+    title: 'Tailor every application in seconds',
+    desc: 'Resumes rewritten for the JD, cover letters drafted, cold emails ready to send. What used to take an hour now takes thirty seconds.',
+    user: 'Rewrite my resume for the Razorpay PM role and draft a cold email to their talent team.',
     channels: ['Web', 'WhatsApp'],
   },
   {
-    title: 'Know the company cold',
-    desc: 'Get culture notes, interview loops, salary benchmarks, and employee sentiment in a two-minute briefing.',
-    bot: 'Razorpay is Series F, 4.1★ on Glassdoor. PM interviews are 4 rounds: case study, product sense, metrics, leadership.',
+    title: 'Walk in knowing the company cold',
+    desc: 'Culture, comp bands, interview loops, and employee sentiment — pulled from public sources into a two-minute briefing.',
+    bot: 'Razorpay: Series F, 4.1★ on Glassdoor. PM loop is 4 rounds — case study, product sense, metrics, leadership.',
     channels: ['Web'],
   },
   {
-    title: 'Rehearse the interview',
-    desc: 'Role-specific mock questions, STAR-method coaching, and instant feedback. Repeat until you feel confident.',
+    title: 'Practice until you feel ready',
+    desc: 'Role-specific mock interviews with STAR-method coaching and scored feedback. Repeat as many times as you need — Omni never gets tired.',
     user: 'Give me a mock product sense question for Razorpay and score my answer.',
     channels: ['Web', 'WhatsApp'],
   },
@@ -70,7 +70,7 @@ function Message({ step, animate = true }) {
 
 function ChatWindow({ messages, animate = true, innerRef }) {
   return (
-    <div className="w-[520px] max-w-full rounded-3xl border border-neutral-200 bg-white shadow-2xl shadow-neutral-900/[0.06] overflow-hidden h-[520px] flex flex-col">
+    <div className="w-[520px] max-w-full rounded-3xl border border-neutral-200 bg-white shadow-2xl shadow-neutral-900/[0.06] overflow-hidden h-[520px] max-h-[80svh] flex flex-col">
       <div className="flex items-center gap-2 border-b border-neutral-100 bg-neutral-50 px-5 py-3.5">
         <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
         <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
@@ -96,27 +96,27 @@ function StaticFallback() {
   return (
     <Container>
       <div className="max-w-3xl">
-        <span className="block text-xs md:text-sm uppercase tracking-[0.25em] text-primary font-semibold mb-6">
+        <span className="block text-[11px] sm:text-xs md:text-sm uppercase tracking-[0.25em] text-primary font-semibold mb-4 sm:mb-6">
           How it works
         </span>
-        <h2 className="text-4xl md:text-5xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05]">
-          Omni handles the full journey — you just have conversations
+        <h2 className="text-[28px] leading-[1.1] sm:text-4xl md:text-5xl font-bold tracking-[-0.025em] text-neutral-900">
+          From job hunt to offer letter, in one conversation
         </h2>
       </div>
 
-      <div className="mt-16 space-y-16">
+      <div className="mt-10 sm:mt-14 md:mt-16 space-y-10 sm:space-y-14 md:space-y-16">
         {steps.map((s, i) => (
-          <div key={s.title} className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,440px)] md:gap-12 items-start">
+          <div key={s.title} className="grid gap-6 sm:gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,440px)] md:gap-12 items-start">
             <div>
-              <span className="font-mono text-sm text-primary tabular-nums">
+              <span className="font-mono text-xs sm:text-sm text-primary tabular-nums">
                 {String(i + 1).padStart(2, '0')} / {String(steps.length).padStart(2, '0')}
               </span>
-              <h3 className="mt-3 text-3xl md:text-4xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.1]">
+              <h3 className="mt-2 sm:mt-3 text-xl sm:text-3xl md:text-4xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.15]">
                 {s.title}
               </h3>
-              <p className="mt-4 text-lg text-neutral-500 max-w-md">{s.desc}</p>
+              <p className="mt-3 sm:mt-4 text-base sm:text-lg text-neutral-500 max-w-md">{s.desc}</p>
             </div>
-            <div className="justify-self-start md:justify-self-end">
+            <div className="justify-self-stretch md:justify-self-end w-full md:w-auto">
               <Message step={s} animate={false} />
             </div>
           </div>
@@ -177,7 +177,7 @@ function PinnedExperience() {
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: `${steps.length * 55 + 30}vh` }}
+      style={{ height: `${steps.length * 55 + 30}svh` }}
     >
       <div className="sticky top-0 flex h-screen items-center">
         <Container>
@@ -187,7 +187,7 @@ function PinnedExperience() {
                 How it works
               </span>
 
-              <div className="relative min-h-[280px]">
+              <div className="relative min-h-[420px] xl:min-h-[460px]">
                 {steps.map((s, i) => {
                   const state = i === active ? 'active' : i < active ? 'past' : 'future'
                   return (
@@ -205,7 +205,7 @@ function PinnedExperience() {
                       <span className="font-mono text-sm text-primary tabular-nums">
                         {String(i + 1).padStart(2, '0')} / {String(steps.length).padStart(2, '0')}
                       </span>
-                      <h2 className="mt-4 text-4xl lg:text-5xl xl:text-6xl font-bold tracking-[-0.03em] text-neutral-900 leading-[1.02]">
+                      <h2 className="mt-4 text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-[-0.03em] text-neutral-900 leading-[1.02]">
                         {s.title}
                       </h2>
                       <p className="mt-6 text-lg text-neutral-500 max-w-md">{s.desc}</p>
@@ -259,7 +259,7 @@ export default function HowItWorks() {
   }, [])
 
   return (
-    <section className="bg-neutral-50 py-24 md:py-32">
+    <section id="how-it-works" className="bg-neutral-50 py-14 sm:py-20 md:py-28 lg:py-32 scroll-mt-24">
       {reducedMotion ? (
         <StaticFallback />
       ) : (

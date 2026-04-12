@@ -20,7 +20,7 @@ function ArrowRight() {
   )
 }
 
-export default function Navbar() {
+export default function Navbar({ onOpenAuth }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -64,19 +64,21 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a
-            href="#sign-in"
+          <button
+            type="button"
+            onClick={() => onOpenAuth?.('signin')}
             className="hidden text-sm font-medium text-[#5b5b6e] transition-colors hover:text-[#0b0b14] md:inline"
           >
             {nav.signIn}
-          </a>
-          <a
-            href="#get-started"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)] transition-all duration-200 hover:bg-primary-hover hover:-translate-y-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenAuth?.('signup')}
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-primary px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-medium text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)] transition-all duration-200 hover:bg-primary-hover hover:-translate-y-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
           >
             {nav.cta}
             <ArrowRight />
-          </a>
+          </button>
         </div>
       </div>
     </header>
