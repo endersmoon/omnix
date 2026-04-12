@@ -40,7 +40,7 @@ export default function Chats() {
   return (
     <DashboardLayout>
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-3xl font-semibold tracking-tight text-[#0b0b14] sm:text-4xl">
               Chats

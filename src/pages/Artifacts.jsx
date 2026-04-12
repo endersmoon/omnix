@@ -136,31 +136,34 @@ export default function Artifacts() {
           </label>
 
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map(({ title, kind, icon: Icon, tint, subtitle, updatedMinutes }) => (
+            {filtered.map((a) => {
+              const Icon = a.icon
+              return (
               <button
-                key={title}
+                key={a.title}
                 type="button"
                 className="group flex flex-col items-start gap-3 rounded-2xl border border-[#ececf3] bg-white p-4 text-left transition-all hover:-translate-y-[1px] hover:border-primary/40 hover:shadow-[0_8px_24px_rgba(11,11,20,0.06)]"
               >
                 <div className="flex w-full items-start justify-between">
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tint}`}>
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${a.tint}`}>
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="rounded-full border border-[#ececf3] bg-[#fafafc] px-2 py-0.5 text-[11px] font-medium text-[#5b5b6e]">
-                    {kind}
+                    {a.kind}
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[15px] font-semibold text-[#0b0b14]">{title}</p>
+                  <p className="truncate text-[15px] font-semibold text-[#0b0b14]">{a.title}</p>
                   <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#5b5b6e]">
-                    {subtitle}
+                    {a.subtitle}
                   </p>
                 </div>
                 <span className="mt-auto text-[11px] text-[#9a9aae]">
-                  Updated {formatRelative(updatedMinutes)}
+                  Updated {formatRelative(a.updatedMinutes)}
                 </span>
               </button>
-            ))}
+              )
+            })}
           </div>
 
           {filtered.length === 0 && (

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { MOCK_CHAT_GROUPS } from './mockChats'
 import {
   Briefcase,
   ChevronsUpDown,
@@ -13,7 +14,8 @@ import {
   User,
 } from 'lucide-react'
 
-function AccountMenuItem({ icon: Icon, label, trailing, onClick }) {
+function AccountMenuItem({ icon, label, trailing, onClick }) {
+  const Icon = icon
   return (
     <button
       type="button"
@@ -89,14 +91,11 @@ const NAV_ITEMS = [
   { icon: Layers, label: 'Artifacts', to: '/dashboard/artifacts' },
 ]
 
-const RECENT_CHATS = [
-  'FAANG interview prep',
-  'Resume for Stripe PM role',
-  'Cover letter — Linear',
-  'Behavioral questions',
-]
-
 function Sidebar({ open, onToggle, onClose, onSignOut }) {
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const activeChatId =
+    location.pathname === '/dashboard' ? searchParams.get('chat') : null
   return (
     <>
       <button
@@ -140,42 +139,57 @@ function Sidebar({ open, onToggle, onClose, onSignOut }) {
           </div>
 
           <nav className="mt-4 flex flex-col gap-0.5 px-2">
-            {NAV_ITEMS.map(({ icon: Icon, label, to }) => (
-              <NavLink
-                key={label}
-                to={to}
-                end
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-black/[0.06] text-[#0b0b14]'
-                      : 'text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14]'
-                  }`
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </NavLink>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon
+              return (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  end
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-black/[0.06] text-[#0b0b14]'
+                        : 'text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14]'
+                    }`
+                  }
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </NavLink>
+              )
+            })}
           </nav>
 
-          <div className="mt-4 flex-1 overflow-y-auto px-2">
-            <p className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9a9aae]">
-              Recent
-            </p>
-            <ul className="flex flex-col gap-0.5">
-              {RECENT_CHATS.map((c) => (
-                <li key={c}>
-                  <button
-                    type="button"
-                    className="w-full truncate rounded-lg px-2.5 py-2 text-left text-sm text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
-                  >
-                    {c}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="mt-4 flex-1 overflow-y-auto px-2 pb-2">
+            {MOCK_CHAT_GROUPS.map((group) => (
+              <div key={group.label} className="mb-3 last:mb-0">
+                <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[#9a9aae]">
+                  {group.label}
+                </p>
+                <ul className="flex flex-col gap-0.5">
+                  {group.chats.map((c) => {
+                    const isActive = c.id === activeChatId
+                    return (
+                      <li key={c.id}>
+                        <Link
+                          to={`/dashboard?chat=${c.id}`}
+                          onClick={onClose}
+                          className={`block w-full truncate rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                            isActive
+                              ? 'bg-primary/[0.08] text-[#0b0b14] font-medium'
+                              : 'text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14]'
+                          }`}
+                        >
+                          {c.title}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
           </div>
 
           <div className="border-t border-[#ececf3] p-2">

@@ -71,18 +71,16 @@ export default function AuthModal({ open, mode = 'signin', onClose, onModeChange
   const [cvFile, setCvFile] = useState(null)
 
   useEffect(() => {
-    if (!open) {
-      setPhase('form')
-      setCvFile(null)
-      setLoading(false)
-      return
-    }
+    if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
+      setPhase('form')
+      setCvFile(null)
+      setLoading(false)
     }
   }, [open, onClose])
 

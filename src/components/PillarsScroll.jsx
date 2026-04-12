@@ -1,5 +1,5 @@
 import Container from './Container'
-import { pillars } from './PillarCard'
+import { pillars } from './pillarData'
 
 export default function PillarsScroll() {
   return (

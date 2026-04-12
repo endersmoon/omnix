@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   AssistantRuntimeProvider,
-  useLocalRuntime,
+  useExternalStoreRuntime,
   useAui,
   AuiIf,
   ThreadPrimitive,
@@ -12,9 +13,11 @@ import {
   SimpleImageAttachmentAdapter,
   SimpleTextAttachmentAdapter,
 } from '@assistant-ui/react'
+import { MOCK_CHAT_BY_ID } from './mockChats'
 import {
   ArrowUp,
   Briefcase,
+  Building2,
   FileText,
   MessageSquare,
   Mic,
@@ -27,6 +30,12 @@ import {
   X,
 } from 'lucide-react'
 import DashboardLayout from './DashboardLayout'
+import JobCard from '../components/chat/JobCard'
+import CompanyInsights from '../components/chat/CompanyInsights'
+import InterviewQuestions from '../components/chat/InterviewQuestions'
+import { SAMPLE_COMPANY, SAMPLE_INTERVIEW, SAMPLE_JOBS } from '../components/chat/widgetFixtures'
+
+const WIDGET_RE = /::widget:(\w+)::([\s\S]*?)::end::/
 
 const CANNED_REPLIES = [
   "Here's a solid starting point — tell me the role or company you're targeting and I'll tailor the plan.",
@@ -34,6 +43,36 @@ const CANNED_REPLIES = [
   "I can help draft that. Share a job description or a rough outline and I'll turn it into a crisp bullet list.",
   "Great — let's prep for that interview. I'll role-play the interviewer; reply with the first question you want to practice.",
 ]
+
+function widgetReply(kind, payload, intro) {
+  return `${intro}\n\n::widget:${kind}::${JSON.stringify(payload)}::end::`
+}
+
+function resolveWidgetReply(text) {
+  const t = text.toLowerCase()
+  if (/\b(job|role|opening|hiring|position)s?\b/.test(t)) {
+    return widgetReply(
+      'jobs',
+      SAMPLE_JOBS,
+      "Here are three roles that match your profile — I sorted them by match score.",
+    )
+  }
+  if (/\b(company|culture|review|glassdoor|ambitionbox)\b/.test(t)) {
+    return widgetReply(
+      'company',
+      SAMPLE_COMPANY,
+      `Here's a snapshot of ${SAMPLE_COMPANY.company} based on recent employee reviews.`,
+    )
+  }
+  if (/\b(interview|mock|behavioral|system design)\b/.test(t)) {
+    return widgetReply(
+      'interview',
+      SAMPLE_INTERVIEW,
+      `I pulled ${SAMPLE_INTERVIEW.questions.length} recent ${SAMPLE_INTERVIEW.company} interview questions. Flip through and tap "Show sample answer" when you want a hint.`,
+    )
+  }
+  return null
+}
 
 const pdfAttachmentAdapter = {
   accept: 'application/pdf,.pdf',
@@ -57,18 +96,57 @@ const pdfAttachmentAdapter = {
   async remove() {},
 }
 
-const dummyAdapter = {
-  async *run({ messages, abortSignal }) {
-    const reply = CANNED_REPLIES[messages.length % CANNED_REPLIES.length]
-    const words = reply.split(' ')
-    let text = ''
-    for (const word of words) {
-      if (abortSignal.aborted) return
-      await new Promise((r) => setTimeout(r, 40))
-      text += (text ? ' ' : '') + word
-      yield { content: [{ type: 'text', text }] }
-    }
-  },
+function appendMessageText(msg) {
+  if (typeof msg.content === 'string') return msg.content
+  return (msg.content ?? [])
+    .map((p) => (p.type === 'text' ? p.text : ''))
+    .filter(Boolean)
+    .join(' ')
+}
+
+async function* streamReply(userText, turnIndex) {
+  const widget = resolveWidgetReply(userText)
+  const full = widget ?? CANNED_REPLIES[turnIndex % CANNED_REPLIES.length]
+  const [prefix, marker] = widget ? full.split('\n\n') : [full, null]
+  const words = prefix.split(' ')
+  let text = ''
+  for (const word of words) {
+    await new Promise((r) => setTimeout(r, widget ? 25 : 35))
+    text += (text ? ' ' : '') + word
+    yield text
+  }
+  if (marker) yield `${prefix}\n\n${marker}`
+}
+
+function WidgetText({ text }) {
+  const match = text.match(WIDGET_RE)
+  if (!match) {
+    return <span className="whitespace-pre-wrap">{text}</span>
+  }
+
+  const prefix = text.slice(0, match.index).trimEnd()
+  let payload
+  try {
+    payload = JSON.parse(match[2])
+  } catch {
+    return <span className="whitespace-pre-wrap">{prefix}</span>
+  }
+  const kind = match[1]
+
+  return (
+    <div className="flex flex-col gap-3">
+      {prefix && <span className="whitespace-pre-wrap">{prefix}</span>}
+      {kind === 'jobs' && (
+        <div className="-mx-1 mt-1 flex flex-col gap-2.5">
+          {payload.map((job) => (
+            <JobCard key={job.title} job={job} />
+          ))}
+        </div>
+      )}
+      {kind === 'company' && <CompanyInsights data={payload} />}
+      {kind === 'interview' && <InterviewQuestions data={payload} />}
+    </div>
+  )
 }
 
 function UserMessage() {
@@ -85,25 +163,26 @@ function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="flex items-start gap-3">
       <img src="/logo.png" alt="Omni" className="mt-0.5 h-8 w-8 shrink-0 object-contain" />
-      <div className="max-w-[80%] rounded-2xl border border-[#ececf3] bg-white px-4 py-2.5 text-sm leading-relaxed text-[#0b0b14]">
-        <MessagePrimitive.Parts />
+      <div className="min-w-0 max-w-[92%] rounded-2xl border border-[#ececf3] bg-white px-4 py-3 text-sm leading-relaxed text-[#0b0b14]">
+        <MessagePrimitive.Parts components={{ Text: WidgetText }} />
       </div>
     </MessagePrimitive.Root>
   )
 }
 
+const SpeechRecognitionCtor =
+  typeof window !== 'undefined'
+    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    : null
+
 function useVoiceInput(onTranscript) {
   const recognitionRef = useRef(null)
   const [listening, setListening] = useState(false)
-  const [supported, setSupported] = useState(false)
+  const supported = Boolean(SpeechRecognitionCtor)
 
   useEffect(() => {
-    const SR =
-      typeof window !== 'undefined' &&
-      (window.SpeechRecognition || window.webkitSpeechRecognition)
-    if (!SR) return
-    setSupported(true)
-    const rec = new SR()
+    if (!SpeechRecognitionCtor) return
+    const rec = new SpeechRecognitionCtor()
     rec.continuous = false
     rec.interimResults = false
     rec.lang = 'en-US'
@@ -120,7 +199,9 @@ function useVoiceInput(onTranscript) {
     return () => {
       try {
         rec.stop()
-      } catch {}
+      } catch {
+        // already stopped
+      }
     }
   }, [onTranscript])
 
@@ -134,7 +215,9 @@ function useVoiceInput(onTranscript) {
       try {
         rec.start()
         setListening(true)
-      } catch {}
+      } catch {
+        // recognizer already running
+      }
     }
   }
 
@@ -240,10 +323,10 @@ const SUGGESTION_CARDS = [
     prompt: 'Run a mock behavioral interview for a staff engineer role. Start with the first question.',
   },
   {
-    icon: Briefcase,
-    title: 'Research a company',
-    subtitle: 'Culture, recent news, and interview style',
-    prompt: 'Give me a briefing on Linear — culture, recent news, and what interviews there are like.',
+    icon: Building2,
+    title: 'Company deep-dive',
+    subtitle: 'Reviews, ratings, pros & cons',
+    prompt: 'Give me a company review and ratings breakdown for Linear.',
   },
   {
     icon: Send,
@@ -279,20 +362,23 @@ function Welcome() {
       </p>
 
       <div className="mt-8 grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {SUGGESTION_CARDS.map(({ icon: Icon, title, subtitle, prompt }) => (
-          <ThreadPrimitive.Suggestion
-            key={title}
-            prompt={prompt}
-            send
-            className="group flex flex-col items-start gap-2 rounded-2xl border border-[#ececf3] bg-white p-4 text-left transition-all hover:-translate-y-[1px] hover:border-primary/40 hover:bg-primary/[0.03] hover:shadow-[0_8px_24px_rgba(74,79,253,0.08)]"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-              <Icon className="h-4 w-4" />
-            </span>
-            <span className="text-sm font-semibold text-[#0b0b14]">{title}</span>
-            <span className="text-xs leading-relaxed text-[#5b5b6e]">{subtitle}</span>
-          </ThreadPrimitive.Suggestion>
-        ))}
+        {SUGGESTION_CARDS.map((card) => {
+          const Icon = card.icon
+          return (
+            <ThreadPrimitive.Suggestion
+              key={card.title}
+              prompt={card.prompt}
+              send
+              className="group flex flex-col items-start gap-2 rounded-2xl border border-[#ececf3] bg-white p-4 text-left transition-all hover:-translate-y-[1px] hover:border-primary/40 hover:bg-primary/[0.03] hover:shadow-[0_8px_24px_rgba(74,79,253,0.08)]"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-semibold text-[#0b0b14]">{card.title}</span>
+              <span className="text-xs leading-relaxed text-[#5b5b6e]">{card.subtitle}</span>
+            </ThreadPrimitive.Suggestion>
+          )
+        })}
       </div>
 
       <div className="mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-2">
@@ -340,16 +426,92 @@ function Thread() {
   )
 }
 
+let messageIdCounter = 0
+const nextMessageId = () => `m-${++messageIdCounter}`
+
+function withIds(messages) {
+  return messages.map((m) => ({ id: nextMessageId(), ...m }))
+}
+
+const convertMessage = (message) => ({
+  role: message.role,
+  content: [{ type: 'text', text: message.content }],
+  id: message.id,
+})
+
 export default function Dashboard() {
-  const runtime = useLocalRuntime(dummyAdapter, {
-    adapters: {
-      attachments: new CompositeAttachmentAdapter([
-        new SimpleImageAttachmentAdapter(),
-        new SimpleTextAttachmentAdapter(),
-        pdfAttachmentAdapter,
-      ]),
+  const [searchParams, setSearchParams] = useSearchParams()
+  const chatId = searchParams.get('chat')
+  const [messages, setMessages] = useState(() =>
+    chatId && MOCK_CHAT_BY_ID[chatId] ? withIds(MOCK_CHAT_BY_ID[chatId].messages) : [],
+  )
+  const [isRunning, setIsRunning] = useState(false)
+  const loadedChatIdRef = useRef(chatId ?? null)
+
+  useEffect(() => {
+    if (chatId === loadedChatIdRef.current) return
+    loadedChatIdRef.current = chatId ?? null
+    if (chatId && MOCK_CHAT_BY_ID[chatId]) {
+      setMessages(withIds(MOCK_CHAT_BY_ID[chatId].messages))
+    } else {
+      setMessages([])
+    }
+    setIsRunning(false)
+  }, [chatId])
+
+  const onNew = useCallback(
+    async (message) => {
+      // When starting a brand-new conversation from an existing mock, clear the URL param
+      // so we don't keep flashing the mock back in.
+      if (chatId) {
+        setSearchParams({}, { replace: true })
+        loadedChatIdRef.current = null
+      }
+
+      const userMsg = {
+        id: nextMessageId(),
+        role: 'user',
+        content: appendMessageText(message),
+      }
+      const assistantId = nextMessageId()
+      setMessages((prev) => [
+        ...prev,
+        userMsg,
+        { id: assistantId, role: 'assistant', content: '' },
+      ])
+      setIsRunning(true)
+
+      try {
+        for await (const chunk of streamReply(userMsg.content, messages.length)) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === assistantId ? { ...m, content: chunk } : m)),
+          )
+        }
+      } finally {
+        setIsRunning(false)
+      }
     },
-  })
+    [chatId, messages.length, setSearchParams],
+  )
+
+  const adapter = useMemo(
+    () => ({
+      messages,
+      isRunning,
+      onNew,
+      convertMessage,
+      adapters: {
+        attachments: new CompositeAttachmentAdapter([
+          new SimpleImageAttachmentAdapter(),
+          new SimpleTextAttachmentAdapter(),
+          pdfAttachmentAdapter,
+        ]),
+      },
+    }),
+    [messages, isRunning, onNew],
+  )
+
+  const runtime = useExternalStoreRuntime(adapter)
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import Container from './Container'
-import PillarCard, { pillars } from './PillarCard'
+import PillarCard from './PillarCard'
+import { pillars } from './pillarData'
 
 const CARD_GAP = 24
 
