@@ -258,7 +258,7 @@ function RecommendedCard({ job }) {
       <div className="mt-1 flex items-center gap-2">
         <button
           type="button"
-          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(74,79,253,0.2)] hover:bg-primary-hover transition-colors"
+          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#ececf3] bg-white px-4 py-2 text-sm font-semibold text-[#0b0b14] transition-colors group-hover:border-transparent group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_8px_24px_rgba(74,79,253,0.2)]"
         >
           Apply with Omni
           <ExternalLink className="h-3.5 w-3.5" />

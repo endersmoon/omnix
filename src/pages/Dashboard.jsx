@@ -18,13 +18,17 @@ import {
   ArrowUp,
   Briefcase,
   Building2,
+  Eraser,
   FileText,
+  Mail,
+  MessageCircle,
   MessageSquare,
   Mic,
   MicOff,
   Paperclip,
   Search,
   Send,
+  Settings as SettingsIcon,
   Sparkles,
   Target,
   X,
@@ -224,6 +228,17 @@ function useVoiceInput(onTranscript) {
   return { listening, supported, toggle }
 }
 
+function Tooltip({ label, children }) {
+  return (
+    <span className="group relative inline-flex">
+      {children}
+      <span className="pointer-events-none absolute -top-9 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#0b0b14] px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-[0_8px_24px_rgba(11,11,20,0.2)] transition-opacity group-hover:opacity-100">
+        {label}
+      </span>
+    </span>
+  )
+}
+
 function ComposerAttachment({ attachment }) {
   const isImage = attachment?.type === 'image'
   return (
@@ -247,8 +262,81 @@ function ComposerAttachment({ attachment }) {
   )
 }
 
+const SLASH_COMMANDS = [
+  {
+    slug: '/companies',
+    label: 'Company Research',
+    desc: 'Get reviews, ratings, salary info, and culture insights',
+    icon: Building2,
+    tint: 'bg-orange-500',
+    prompt: 'Give me a company review and ratings breakdown for ',
+  },
+  {
+    slug: '/emails',
+    label: 'Email Job Tracker',
+    desc: 'Track job-related emails from your inbox',
+    icon: Mail,
+    tint: 'bg-rose-500',
+    prompt: 'Show me the latest job-related emails in my inbox.',
+  },
+  {
+    slug: '/settings',
+    label: 'Settings',
+    desc: 'Manage notifications, account linking, and preferences',
+    icon: SettingsIcon,
+    tint: 'bg-sky-500',
+    prompt: 'Open my settings for notifications and account linking.',
+  },
+  {
+    slug: '/interview',
+    label: 'Interview Prep',
+    desc: 'Practice company-specific interview questions with AI feedback',
+    icon: MessageSquare,
+    tint: 'bg-fuchsia-500',
+    prompt: 'Start an interview prep session with company-specific questions for ',
+  },
+  {
+    slug: '/fresh',
+    label: 'Start Fresh',
+    desc: 'Clear conversation memory and start with a blank slate',
+    icon: Eraser,
+    tint: 'bg-emerald-500',
+    prompt: '',
+  },
+  {
+    slug: '/chat',
+    label: 'General Chat',
+    desc: 'Ask general career questions or get advice',
+    icon: MessageCircle,
+    tint: 'bg-indigo-500',
+    prompt: '',
+  },
+]
+
 function Composer() {
   const aui = useAui()
+  const inputRef = useRef(null)
+  const [slashOpen, setSlashOpen] = useState(false)
+  const [slashQuery, setSlashQuery] = useState('')
+  const [slashIdx, setSlashIdx] = useState(0)
+
+  const filteredCommands = useMemo(() => {
+    const q = slashQuery.toLowerCase()
+    if (!q) return SLASH_COMMANDS
+    return SLASH_COMMANDS.filter(
+      (c) => c.slug.slice(1).startsWith(q) || c.label.toLowerCase().includes(q),
+    )
+  }, [slashQuery])
+
+  const safeIdx = filteredCommands.length
+    ? Math.min(slashIdx, filteredCommands.length - 1)
+    : 0
+
+  const closeSlash = () => {
+    setSlashOpen(false)
+    setSlashQuery('')
+    setSlashIdx(0)
+  }
 
   const { listening, supported, toggle } = useVoiceInput((transcript) => {
     const current = aui.composer().getState().text ?? ''
@@ -256,8 +344,121 @@ function Composer() {
     aui.composer().setText(next)
   })
 
+  const selectCommand = (cmd) => {
+    if (!cmd) return
+    aui.composer().setText(cmd.prompt ?? '')
+    closeSlash()
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+    })
+  }
+
+  const handleKeyDown = (e) => {
+    if (slashOpen) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeSlash()
+        return
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSlashIdx((i) => (filteredCommands.length ? (i + 1) % filteredCommands.length : 0))
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSlashIdx((i) =>
+          filteredCommands.length
+            ? (i - 1 + filteredCommands.length) % filteredCommands.length
+            : 0,
+        )
+        return
+      }
+      if (e.key === 'Enter' && !e.shiftKey) {
+        if (filteredCommands.length) {
+          e.preventDefault()
+          e.stopPropagation()
+          selectCommand(filteredCommands[safeIdx])
+        }
+        return
+      }
+    }
+    if (e.key === '/' && !slashOpen) {
+      const text = aui.composer().getState().text ?? ''
+      if (text.trim() === '') {
+        setSlashOpen(true)
+        setSlashQuery('')
+        setSlashIdx(0)
+      }
+    }
+  }
+
+  const handleInput = (e) => {
+    const text = e.currentTarget.value
+    if (slashOpen) {
+      if (text.startsWith('/')) {
+        setSlashQuery(text.slice(1).toLowerCase())
+        setSlashIdx(0)
+      } else {
+        closeSlash()
+      }
+    }
+  }
+
   return (
-    <ComposerPrimitive.Root className="mx-auto flex w-full max-w-3xl flex-col rounded-3xl border border-[#ececf3] bg-white shadow-[0_8px_24px_rgba(11,11,20,0.06)] focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10 transition-all">
+    <div
+      className="relative mx-auto w-full max-w-3xl"
+      onKeyDownCapture={handleKeyDown}
+      onInputCapture={handleInput}
+    >
+      {slashOpen && filteredCommands.length > 0 && (
+        <div className="absolute bottom-full left-0 right-0 mb-2 overflow-hidden rounded-2xl border border-[#ececf3] bg-white shadow-[0_20px_48px_rgba(11,11,20,0.12)]">
+          <div className="flex items-center gap-2 border-b border-[#ececf3] px-4 py-2.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9a9aae]">
+              Quick Actions
+            </span>
+            <span className="rounded-md border border-[#ececf3] bg-[#f5f5fa] px-1.5 py-0.5 font-mono text-[11px] text-[#5b5b6e]">
+              /
+            </span>
+          </div>
+          <ul className="max-h-80 overflow-y-auto py-1">
+            {filteredCommands.map((cmd, i) => {
+              const Icon = cmd.icon
+              const active = i === safeIdx
+              return (
+                <li key={cmd.slug}>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setSlashIdx(i)}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      selectCommand(cmd)
+                    }}
+                    className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors ${
+                      active ? 'bg-[#f5f5fa]' : 'bg-white'
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${cmd.tint}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-[#0b0b14]">{cmd.label}</span>
+                        <span className="font-mono text-[11px] text-[#9a9aae]">{cmd.slug}</span>
+                      </span>
+                      <span className="mt-0.5 block text-xs text-[#5b5b6e]">{cmd.desc}</span>
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+
+      <ComposerPrimitive.Root className="flex w-full flex-col rounded-3xl border border-[#ececf3] bg-white shadow-[0_8px_24px_rgba(11,11,20,0.06)] focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10 transition-all">
         <div className="flex flex-wrap gap-2 empty:hidden px-4 pt-3">
           <ComposerPrimitive.Attachments>
             {({ attachment }) => <ComposerAttachment attachment={attachment} />}
@@ -265,41 +466,79 @@ function Composer() {
         </div>
 
       <ComposerPrimitive.Input
-        placeholder={listening ? 'Listening…' : 'Ask Omni anything about your job search…'}
+        ref={inputRef}
+        placeholder={listening ? 'Listening…' : 'Ask Omni anything about your job search… (press / for quick actions)'}
         rows={1}
+        onBlur={() => closeSlash()}
         className="max-h-40 min-h-12 w-full resize-none bg-transparent px-5 pt-3.5 pb-1 text-sm text-[#0b0b14] outline-none placeholder:text-[#9a9aae]"
       />
 
       <div className="flex items-center justify-between px-2.5 pb-2.5">
         <div className="flex items-center gap-1">
-          <ComposerPrimitive.AddAttachment
-            aria-label="Attach files"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
-          >
-            <Paperclip className="h-4 w-4" />
-          </ComposerPrimitive.AddAttachment>
+          <Tooltip label="Attach files">
+            <ComposerPrimitive.AddAttachment
+              aria-label="Attach files"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14] transition-colors"
+            >
+              <Paperclip className="h-4 w-4" />
+            </ComposerPrimitive.AddAttachment>
+          </Tooltip>
           {supported && (
+            <Tooltip label={listening ? 'Stop voice input' : 'Voice input'}>
+              <button
+                type="button"
+                onClick={toggle}
+                aria-label={listening ? 'Stop voice input' : 'Start voice input'}
+                aria-pressed={listening}
+                className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                  listening
+                    ? 'bg-primary/10 text-primary animate-pulse'
+                    : 'text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14]'
+                }`}
+              >
+                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            </Tooltip>
+          )}
+          <Tooltip label="Quick actions (/)">
             <button
               type="button"
-              onClick={toggle}
-              aria-label={listening ? 'Stop voice input' : 'Start voice input'}
-              aria-pressed={listening}
+              aria-label="Quick actions"
+              aria-pressed={slashOpen}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                if (slashOpen) {
+                  closeSlash()
+                  return
+                }
+                aui.composer().setText('/')
+                setSlashOpen(true)
+                setSlashQuery('')
+                setSlashIdx(0)
+                requestAnimationFrame(() => inputRef.current?.focus())
+              }}
               className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                listening
-                  ? 'bg-primary/10 text-primary animate-pulse'
+                slashOpen
+                  ? 'bg-primary/10 text-primary'
                   : 'text-[#5b5b6e] hover:bg-black/[0.04] hover:text-[#0b0b14]'
               }`}
             >
-              {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              <Sparkles className="h-4 w-4" />
             </button>
-          )}
+          </Tooltip>
         </div>
 
-        <ComposerPrimitive.Send className="flex size-9 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)] transition-opacity hover:bg-primary-hover disabled:opacity-30">
-          <ArrowUp className="h-4 w-4" />
-        </ComposerPrimitive.Send>
+        <Tooltip label="Send message">
+          <ComposerPrimitive.Send
+            aria-label="Send message"
+            className="flex size-9 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)] transition-opacity hover:bg-primary-hover disabled:opacity-30"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </ComposerPrimitive.Send>
+        </Tooltip>
       </div>
     </ComposerPrimitive.Root>
+    </div>
   )
 }
 
