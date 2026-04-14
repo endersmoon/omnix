@@ -45,7 +45,8 @@ export default function Channels() {
           Channels
         </span>
         <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05] max-w-3xl">
-          One agent across Web, WhatsApp & Email
+          One agent across 
+          Web, WhatsApp & Email
         </h2>
         <div className="mt-16 grid gap-6 md:grid-cols-3">
           {channels.map((c) => (

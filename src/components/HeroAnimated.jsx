@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { heroLines, heroScenes, blobColors, blobPositions } from '../data/heroContent'
 
-export default function HeroAnimated({ onOpenAuth }) {
+export default function HeroAnimated() {
   const [activeIdx, setActiveIdx] = useState(0)
   const [isBlack, setIsBlack] = useState(false)
   const cmdTextRef = useRef(null)
@@ -92,34 +92,20 @@ export default function HeroAnimated({ onOpenAuth }) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <section className="relative left-1/2 -translate-x-1/2 w-screen h-svh flex flex-col items-center justify-center text-center px-6 bg-white overflow-hidden">
-      {/* Grid background */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(0,0,0,.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0,0,0,.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%)'
-        }}
-      />
-
+    <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 relative overflow-hidden">
       {/* Blobs */}
       <div ref={blob1} className="absolute rounded-full pointer-events-none" style={{ width: 520, height: 420, top: '4%', left: '3%', filter: 'blur(80px)', background: 'rgba(186,218,255,.35)' }} />
       <div ref={blob2} className="absolute rounded-full pointer-events-none" style={{ width: 420, height: 360, top: '6%', right: '3%', filter: 'blur(80px)', background: 'rgba(255,210,180,.3)' }} />
       <div ref={blob3} className="absolute rounded-full pointer-events-none" style={{ width: 320, height: 320, bottom: '12%', left: '50%', transform: 'translateX(-50%)', filter: 'blur(80px)', background: 'rgba(200,230,200,.25)' }} />
 
-      <div className="relative z-[1] flex flex-col items-center w-full max-w-[720px]">
+      <div className="relative z-[1] flex flex-col items-center gap-5 w-full max-w-[720px]">
         {/* H2 */}
-        <p className="sr font-sans text-[clamp(14px,2vw,17px)] font-normal mb-3" style={{ color: 'var(--mid)' }}>
+        <p className="sr font-sans text-[clamp(14px,2vw,17px)] font-normal" style={{ color: 'var(--mid)' }}>
           Meet Omni — Your AI career agent
         </p>
 
         {/* H1 cycling */}
-        <div className="sr relative w-full flex items-center justify-center mb-6" style={{ height: 'clamp(56px, 8vw, 96px)' }}>
+        <div className="sr relative w-full flex items-center justify-center" style={{ height: 'clamp(56px, 8vw, 96px)' }}>
           {heroLines.map((line, i) => (
             <span
               key={i}
@@ -147,11 +133,7 @@ export default function HeroAnimated({ onOpenAuth }) {
         </div>
 
         {/* CTA */}
-        <button
-          type="button"
-          onClick={() => onOpenAuth?.('signup')}
-          className="sr inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-primary/25 hover:bg-primary-hover transition-all mb-8 border-none cursor-pointer"
-        >
+        <button className="sr inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-primary/25 hover:bg-primary-hover transition-all mt-1 border-none cursor-pointer">
           Get started for free
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12h14M12 5l7 7-7 7" />
@@ -159,7 +141,7 @@ export default function HeroAnimated({ onOpenAuth }) {
         </button>
 
         {/* Command card wrap */}
-        <div className="sr relative w-full max-w-[620px] mb-6">
+        <div className="sr relative w-full max-w-[620px] mt-2">
           {/* Ghost window */}
           <div className="absolute pointer-events-none hidden md:block" style={{ width: 480, height: 300, left: '50%', top: '50%', transform: 'translate(-50%,-52%)', border: '1px solid rgba(26,25,23,.06)', borderRadius: 12, background: 'rgba(255,255,255,.2)' }}>
             <div className="flex items-center gap-1 px-2.5" style={{ height: 26, borderBottom: '1px solid rgba(26,25,23,.04)' }}>
@@ -200,7 +182,7 @@ export default function HeroAnimated({ onOpenAuth }) {
         </div>
 
         {/* Pills */}
-        <div className="sr flex gap-2 flex-wrap justify-center mt-2">
+        <div className="sr flex gap-2 flex-wrap justify-center">
           {[
             { icon: <><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" /><path d="M12 13h4" /><path d="M12 8h8" /></>, label: '10+ AI agents' },
             { icon: <><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></>, label: 'Web' },
@@ -214,16 +196,6 @@ export default function HeroAnimated({ onOpenAuth }) {
           ))}
         </div>
       </div>
-
-      <a
-        href="#how-it-works"
-        aria-label="Scroll down"
-        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white/70 text-neutral-700 backdrop-blur-sm shadow-sm hover:bg-white hover:text-primary transition-colors animate-bounce"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14M5 12l7 7 7-7" />
-        </svg>
-      </a>
     </section>
   )
 }
