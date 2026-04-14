@@ -9,7 +9,7 @@ const nav = {
     { label: 'Channels', href: '#channels' },
   ],
   signIn: 'Sign in',
-  cta: 'Get started free',
+  cta: 'Get started for free',
 }
 
 function ArrowRight() {
@@ -39,14 +39,12 @@ export default function Navbar({ onOpenAuth }) {
             : 'mt-0 border border-transparent'
         }`}
       >
-        <a href="#" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Omni" className="h-12 w-12 object-contain" />
-          <span className="text-[15px] font-semibold tracking-tight text-[#0b0b14]">
+        <a href="#" className="flex items-center  ">
+          <img src="/logo.png" alt="Omni" className="h-16 w-16 object-contain" />
+          <span className="text-xl font-semibold tracking-tight ">
             {nav.brand}
           </span>
-          <span className="hidden text-[13px] font-medium text-[#9a9aae] md:inline">
-            {nav.tag}
-          </span>
+          <div className='pl-2 pt-1  text-gray-500'>AI career Agent</div>
         </a>
 
         <nav className="hidden items-center gap-8 md:flex">
