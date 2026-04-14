@@ -10,7 +10,6 @@ import {
   User,
   Zap,
 } from 'lucide-react'
-import DashboardLayout from './DashboardLayout'
 
 const PROFILE = {
   fullName: 'Tushar Debnath',
@@ -197,8 +196,7 @@ export default function Profile() {
       : '—'
 
   return (
-    <DashboardLayout>
-      <div className="flex-1 overflow-y-auto bg-[#fafafc]">
+    <div className="flex-1 overflow-y-auto bg-white">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-5 py-10 sm:px-8 sm:py-14">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-semibold tracking-tight text-[#0b0b14] sm:text-4xl">
@@ -332,8 +330,7 @@ export default function Profile() {
           <p className="pb-4 text-center text-[11px] text-[#9a9aae]">
             Update your profile by chatting with Omni — it edits these sections for you.
           </p>
-        </div>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }

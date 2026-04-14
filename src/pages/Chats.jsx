@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Search } from 'lucide-react'
-import DashboardLayout from './DashboardLayout'
 
 const ALL_CHATS = [
   { title: 'Candidate evaluation', lastMessageMinutes: 56 },
@@ -38,8 +37,7 @@ export default function Chats() {
   }, [query])
 
   return (
-    <DashboardLayout>
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-3xl font-semibold tracking-tight text-[#0b0b14] sm:text-4xl">
@@ -83,8 +81,7 @@ export default function Chats() {
               <li className="py-10 text-center text-sm text-[#9a9aae]">No chats match "{query}".</li>
             )}
           </ul>
-        </div>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }

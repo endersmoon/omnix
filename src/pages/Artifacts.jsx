@@ -10,7 +10,6 @@ import {
   Search,
   Sparkles,
 } from 'lucide-react'
-import DashboardLayout from './DashboardLayout'
 
 const ARTIFACTS = [
   {
@@ -104,8 +103,7 @@ export default function Artifacts() {
   }, [query])
 
   return (
-    <DashboardLayout>
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-3xl font-semibold tracking-tight text-[#0b0b14] sm:text-4xl">
@@ -171,8 +169,7 @@ export default function Artifacts() {
               No artifacts match "{query}".
             </p>
           )}
-        </div>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }

@@ -33,7 +33,6 @@ import {
   Target,
   X,
 } from 'lucide-react'
-import DashboardLayout from './DashboardLayout'
 import JobCard from '../components/chat/JobCard'
 import CompanyInsights from '../components/chat/CompanyInsights'
 import InterviewQuestions from '../components/chat/InterviewQuestions'
@@ -754,9 +753,7 @@ export default function Dashboard() {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <DashboardLayout>
-        <Thread />
-      </DashboardLayout>
+      <Thread />
     </AssistantRuntimeProvider>
   )
 }

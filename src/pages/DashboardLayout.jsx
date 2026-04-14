@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { MOCK_CHAT_GROUPS } from './mockChats'
 import SettingsModal from '../components/SettingsModal'
 import {
@@ -139,7 +139,6 @@ function Sidebar({ open, onToggle, onClose, onSignOut, onOpenSettings }) {
           <div className="px-3">
             <Link
               to="/dashboard"
-              onClick={onClose}
               className="flex w-full items-center gap-2 rounded-xl border border-[#ececf3] bg-white px-3 py-2.5 text-sm font-medium text-[#0b0b14] hover:bg-black/[0.03] transition-colors"
             >
               <Plus className="h-4 w-4" />
@@ -155,7 +154,6 @@ function Sidebar({ open, onToggle, onClose, onSignOut, onOpenSettings }) {
                   key={item.label}
                   to={item.to}
                   end
-                  onClick={onClose}
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors ${
                       isActive
@@ -184,7 +182,6 @@ function Sidebar({ open, onToggle, onClose, onSignOut, onOpenSettings }) {
                       <li key={c.id}>
                         <Link
                           to={`/dashboard?chat=${c.id}`}
-                          onClick={onClose}
                           className={`block w-full truncate rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
                             isActive
                               ? 'bg-primary/[0.08] text-[#0b0b14] font-medium'
@@ -264,7 +261,7 @@ export default function DashboardLayout({ children }) {
           </button>
         )}
 
-        {children}
+        {children ?? <Outlet />}
       </main>
     </div>
   )

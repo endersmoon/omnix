@@ -9,17 +9,20 @@ import Chats from './pages/Chats.jsx'
 import Artifacts from './pages/Artifacts.jsx'
 import Jobs from './pages/Jobs.jsx'
 import Profile from './pages/Profile.jsx'
+import DashboardLayout from './pages/DashboardLayout.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard/chats" element={<Chats />} />
-        <Route path="/dashboard/artifacts" element={<Artifacts />} />
-        <Route path="/dashboard/jobs" element={<Jobs />} />
-        <Route path="/dashboard/profile" element={<Profile />} />
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="chats" element={<Chats />} />
+          <Route path="artifacts" element={<Artifacts />} />
+          <Route path="jobs" element={<Jobs />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>,
