@@ -10,12 +10,16 @@ if (!API_KEY) {
 }
 
 const STYLE =
-  'Use the EXACT SAME chibi 3D robot character from the reference image — round white-and-lavender helmet, glowing dark visor with smiling eyes, white plastic body with subtle grey panel lines, short stubby arms and legs, small orange necktie. Keep proportions, colors, and face identical. Soft studio lighting, gentle ambient occlusion, pastel palette, clean Pixar-style 3D render. Pure white background, centered square 1:1 composition, no text, no words, no logo.'
+  'Chibi 3D robot character with round white-and-lavender helmet, glowing dark visor with smiling curved eyes, white plastic body with subtle grey panel lines, short stubby arms and legs, small orange necktie. Soft studio lighting, gentle ambient occlusion, pastel palette, clean Pixar-style 3D render. Pure white background, centered square 1:1 composition, no text, no words, no logo.'
 
 const pillars = [
   {
     name: 'job-search',
     prompt: `The same chibi robot character holding up a large magnifying glass in one hand and looking through it with curious wide eyes, a small floating briefcase icon hovering beside it. ${STYLE}`,
+  },
+  {
+    name: 'auto-apply',
+    prompt: `${STYLE} The robot is pressing a large glowing "APPLY" button with one hand while multiple floating application papers with checkmarks fly outward in all directions, looking excited and confident.`,
   },
   {
     name: 'resume-builder',
@@ -39,12 +43,6 @@ const pillars = [
   },
 ]
 
-const REFERENCE_IMAGE_PATH = path.resolve(import.meta.dirname, '..', 'public', 'bot.png')
-const referenceImageBase64 = fs.readFileSync(REFERENCE_IMAGE_PATH).toString('base64')
-const referenceImagePart = {
-  inlineData: { mimeType: 'image/png', data: referenceImageBase64 },
-}
-
 const outDir = path.resolve('public/pillars')
 fs.mkdirSync(outDir, { recursive: true })
 
@@ -52,19 +50,19 @@ async function generateImage(pillar) {
   console.log(`Generating: ${pillar.name}...`)
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [
+        instances: [
           {
-            parts: [referenceImagePart, { text: pillar.prompt }],
+            prompt: pillar.prompt,
           },
         ],
-        generationConfig: {
-          responseModalities: ['IMAGE', 'TEXT'],
-          responseMimeType: 'text/plain',
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: '1:1',
         },
       }),
     }
@@ -78,25 +76,27 @@ async function generateImage(pillar) {
 
   const data = await response.json()
 
-  const imagePart = data.candidates?.[0]?.content?.parts?.find(
-    (p) => p.inlineData?.mimeType?.startsWith('image/')
-  )
-
-  if (!imagePart) {
+  const prediction = data.predictions?.[0]
+  if (!prediction?.bytesBase64Encoded) {
     console.error(`No image returned for ${pillar.name}`)
     console.error(JSON.stringify(data, null, 2).slice(0, 500))
     return false
   }
 
-  const ext = imagePart.inlineData.mimeType === 'image/png' ? 'png' : 'jpg'
-  const outPath = path.join(outDir, `${pillar.name}.${ext}`)
-  fs.writeFileSync(outPath, Buffer.from(imagePart.inlineData.data, 'base64'))
+  const outPath = path.join(outDir, `${pillar.name}.png`)
+  fs.writeFileSync(outPath, Buffer.from(prediction.bytesBase64Encoded, 'base64'))
   console.log(`Saved: ${outPath}`)
   return true
 }
 
 // Run sequentially to avoid rate limits
-for (const pillar of pillars) {
+// Filter to only generate missing images
+const targetPillar = process.argv[2]
+const toGenerate = targetPillar
+  ? pillars.filter((p) => p.name === targetPillar)
+  : pillars
+
+for (const pillar of toGenerate) {
   const ok = await generateImage(pillar)
   if (!ok) console.log(`Skipping ${pillar.name}`)
   // Small delay between requests

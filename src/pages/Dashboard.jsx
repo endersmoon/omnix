@@ -13,7 +13,9 @@ import {
   SimpleImageAttachmentAdapter,
   SimpleTextAttachmentAdapter,
 } from '@assistant-ui/react'
+import { useOutletContext } from 'react-router-dom'
 import { MOCK_CHAT_BY_ID } from './mockChats'
+import SignupModal from '../components/SignupModal'
 import {
   ArrowUp,
   Briefcase,
@@ -463,7 +465,7 @@ function Composer() {
         className="max-h-40 min-h-12 w-full resize-none bg-transparent px-5 pt-3.5 pb-1 text-sm text-[#0b0b14] outline-none placeholder:text-[#9a9aae]"
       />
 
-      <div className="flex items-center justify-between px-2.5 pb-2.5">
+      <div className="flex items-center justify-between pl-2.5 pr-3 pb-2.5">
         <div className="flex items-center gap-1">
           <Tooltip label="Attach files">
             <ComposerPrimitive.AddAttachment
@@ -521,12 +523,13 @@ function Composer() {
         <Tooltip label="Send message">
           <ComposerPrimitive.Send
             aria-label="Send message"
-            className="flex size-9 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)] transition-opacity hover:bg-primary-hover disabled:opacity-30"
+            className="flex size-9 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_rgba(74,79,253,0.25)] transition-opacity hover:bg-primary-hover disabled:cursor-default"
           >
             <ArrowUp className="h-4 w-4" />
           </ComposerPrimitive.Send>
         </Tooltip>
       </div>
+
     </ComposerPrimitive.Root>
     </div>
   )
@@ -669,6 +672,8 @@ const convertMessage = (message) => ({
 })
 
 export default function Dashboard() {
+  const ctx = useOutletContext() ?? {}
+  const isGuest = ctx.isGuest ?? false
   const [searchParams, setSearchParams] = useSearchParams()
   const chatId = searchParams.get('chat')
   const [messages, setMessages] = useState(() =>
@@ -676,6 +681,10 @@ export default function Dashboard() {
   )
   const [isRunning, setIsRunning] = useState(false)
   const loadedChatIdRef = useRef(chatId ?? null)
+  const userMsgCountRef = useRef(0)
+  const [showSignup, setShowSignup] = useState(false)
+  const onNewRef = useRef(null)
+  const heroQueryRef = useRef(new URLSearchParams(window.location.search).get('q') ?? '')
 
   useEffect(() => {
     if (chatId === loadedChatIdRef.current) return
@@ -710,6 +719,11 @@ export default function Dashboard() {
       ])
       setIsRunning(true)
 
+      if (isGuest && !message.fromHero) {
+        userMsgCountRef.current += 1
+        if (userMsgCountRef.current === 2) setShowSignup(true)
+      }
+
       try {
         for await (const chunk of streamReply(userMsg.content, messages.length)) {
           setMessages((prev) =>
@@ -720,8 +734,22 @@ export default function Dashboard() {
         setIsRunning(false)
       }
     },
-    [chatId, messages.length, setSearchParams],
+    [chatId, isGuest, messages.length, setSearchParams],
   )
+
+  // Keep ref current so the auto-send effect always calls latest version
+  useEffect(() => { onNewRef.current = onNew }, [onNew])
+
+  // Auto-send initial query from landing-page hero input (?q=...)
+  // heroQueryRef guards against Strict Mode double-invocation (timer-based approaches
+  // are unreliable because cleanup cancels timers before they fire in dev Strict Mode).
+  useEffect(() => {
+    const q = heroQueryRef.current
+    if (!q) return
+    heroQueryRef.current = '' // consume so second Strict Mode invocation is a no-op
+    setSearchParams(p => { const n = new URLSearchParams(p); n.delete('q'); return n }, { replace: true })
+    onNewRef.current?.({ content: [{ type: 'text', text: q }], fromHero: true })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const adapter = useMemo(
     () => ({
@@ -745,6 +773,7 @@ export default function Dashboard() {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <Thread />
+      {showSignup && <SignupModal onDismiss={() => setShowSignup(false)} />}
     </AssistantRuntimeProvider>
   )
 }

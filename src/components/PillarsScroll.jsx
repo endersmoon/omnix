@@ -12,7 +12,7 @@ export default function PillarsScroll() {
                 How Omni helps
               </span>
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-neutral-900 leading-[1.05]">
-                Everything you need to land your next role
+                Everything you need to accelerate your career growth
               </h2>
               <p className="mt-4 text-lg text-neutral-500 max-w-md md:mt-6 md:text-lg">
                 Scroll through every pillar — from first search to signed offer.

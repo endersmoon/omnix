@@ -30,6 +30,15 @@ const steps = [
     channels: ['Web', 'WhatsApp'],
   },
   {
+    title: 'Auto-apply while you sleep',
+    desc: 'One tap to submit. Omni fills forms, attaches tailored docs, and tracks every application — so you never lose a lead or miss a deadline.',
+    messages: [
+      { from: 'user', text: 'Apply to all 5 shortlisted roles and track them for me.' },
+      { from: 'bot', text: 'Done. 5 job applications submitted along with custom resumes for each. I\'ll notify you when they respond.' },
+    ],
+    channels: ['Automated', 'Web'],
+  },
+  {
     title: 'Walk in knowing the company cold',
     desc: 'Culture, comp bands, interview loops, and employee sentiment — pulled from public sources into a two-minute briefing.',
     messages: [

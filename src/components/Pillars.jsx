@@ -42,7 +42,7 @@ export default function Pillars() {
       <Container>
         <div className="flex items-end justify-between gap-8 mb-12">
           <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-[-0.025em] text-neutral-900 leading-[1.05] max-w-3xl">
-            Everything you need to land your next role
+            Everything you need to accelerate your career growth
           </h2>
           <div className="hidden sm:flex gap-3 shrink-0">
             <NavButton direction="left" onClick={() => scroll(-1)} />
